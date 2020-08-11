@@ -1,0 +1,90 @@
+<!DOCTYPE html><html>
+<head>
+<style>
+body,input,button{font-size:4vw}
+td{ width:50%;}
+</style>
+</head>
+<body>
+<table border="1" style="width:100%;">
+<caption><b>Simple HTML Configurator</b></caption>
+
+<tr><td>Name</td><td>Value</td></tr>
+
+<tr><td>Byte CFG1</td><td><input id="var1" type="text" style="width:100%;"></td></tr>
+
+<tr><td>Byte CFG2</td><td><input id="var2" type="text" style="width:100%;"></td></tr>
+
+<tr><td>WiFi on/off period:</td><td>
+<input name="sel1" type="radio" style="width:10%;" value="0" id="s1v0"><label for="0" style="width:100%;">1 min on/1 min off</label><br>
+<input name="sel1" type="radio" style="width:10%;" value="1" id="s1v1"><label for="1" style="width:100%;">1 min on/5 min off</label><br>
+<input name="sel1" type="radio" style="width:10%;" value="2" id="s1v2"><label for="2" style="width:100%;">5 min on/1 hour off</label><br>
+<input name="sel1" type="radio" style="width:10%;" value="3" id="s1v3"><label for="3" style="width:100%;">5 min on reset</label><br>
+</td></tr>
+
+</table>
+<table border="0" style="width:100%;">
+<tr><td>
+<button id="getcfg" type="button" onclick="getcfg()" style="width:100%;">Read Cfg</button>
+</td><td>
+<button id="setcfg" type="button" onclick="setcfg()" style="width:100%;">Write Cfg</button>
+</td></tr>
+</table>
+<script type="text/javascript">
+function AlertError()
+{
+	alert("Time out read/write config!");
+}
+function setcfg()
+{
+	var sel1value=-1;
+	if (document.getElementById("s1v0").checked) sel1value=0;
+	if (document.getElementById("s1v1").checked) sel1value=1;
+	if (document.getElementById("s1v2").checked) sel1value=2;
+	if (document.getElementById("s1v3").checked) sel1value=3;
+	var xhttp = new XMLHttpRequest();
+	xhttp.ontimeout=AlertError;
+	xhttp.open("POST", "/config", false);
+	xhttp.setRequestHeader("var1", document.getElementById("var1").value);
+	xhttp.setRequestHeader("var2", document.getElementById("var2").value);
+	xhttp.setRequestHeader("sel1", sel1value);
+	xhttp.send();
+	if (xhttp.status != 200)
+	{
+		alert(xhttp.status + ': ' + xhttp.statusText);
+	}
+	else
+	{
+		document.getElementById("setcfg").value="SetCfg: "+xhttp.responseText;//not work!
+	}
+}
+function getcfg()
+{
+	var xhttp = new XMLHttpRequest();
+	xhttp.ontimeout=AlertError;
+	xhttp.open("GET", "/config", false);
+	xhttp.send();
+	if (xhttp.status != 200)
+	{
+		alert(xhttp.status + ': ' + xhttp.statusText);
+	}
+	else
+	{
+		if (xhttp.getResponseHeader("var1")!=null) document.getElementById("var1").value=xhttp.getResponseHeader("var1");
+		if (xhttp.getResponseHeader("var2")!=null) document.getElementById("var2").value=xhttp.getResponseHeader("var2");
+		if (xhttp.getResponseHeader("sel1")!=null)
+		switch(xhttp.getResponseHeader("sel1"))
+		{
+			case "0": document.getElementById("s1v0").checked=true;break;
+			case "1": document.getElementById("s1v1").checked=true;break;
+			case "2": document.getElementById("s1v2").checked=true;break;
+			case "3": document.getElementById("s1v3").checked=true;break;
+		}
+	}
+}
+window.onload=function()
+{
+	getcfg();
+}
+</script>
+</body></html>
