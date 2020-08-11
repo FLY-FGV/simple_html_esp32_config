@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := file_server
+PROJECT_NAME := simple
 
 include $(IDF_PATH)/make/project.mk
 
