@@ -15,11 +15,11 @@ td{ width:50%;}
 
 <tr><td>Byte CFG2</td><td><input id="var2" type="text" style="width:100%;"></td></tr>
 
-<tr><td>WiFi on/off period:</td><td>
-<input name="sel1" type="radio" style="width:10%;" value="0" id="s1v0"><label for="0" style="width:100%;">1 min on/1 min off</label><br>
-<input name="sel1" type="radio" style="width:10%;" value="1" id="s1v1"><label for="1" style="width:100%;">1 min on/5 min off</label><br>
-<input name="sel1" type="radio" style="width:10%;" value="2" id="s1v2"><label for="2" style="width:100%;">5 min on/1 hour off</label><br>
-<input name="sel1" type="radio" style="width:10%;" value="3" id="s1v3"><label for="3" style="width:100%;">5 min on reset</label><br>
+<tr><td>Option 1:</td><td>
+<input name="sel1" type="radio" style="width:10%;" value="0" id="s1v0"><label for="0" style="width:100%;">option val=0</label><br>
+<input name="sel1" type="radio" style="width:10%;" value="1" id="s1v1"><label for="1" style="width:100%;">option val=1</label><br>
+<input name="sel1" type="radio" style="width:10%;" value="2" id="s1v2"><label for="2" style="width:100%;">option val=2</label><br>
+<input name="sel1" type="radio" style="width:10%;" value="3" id="s1v3"><label for="3" style="width:100%;">option val=3</label><br>
 </td></tr>
 
 </table>
@@ -31,10 +31,6 @@ td{ width:50%;}
 </td></tr>
 </table>
 <script type="text/javascript">
-function AlertError()
-{
-	alert("Time out read/write config!");
-}
 function setcfg()
 {
 	var sel1value=-1;
@@ -43,32 +39,19 @@ function setcfg()
 	if (document.getElementById("s1v2").checked) sel1value=2;
 	if (document.getElementById("s1v3").checked) sel1value=3;
 	var xhttp = new XMLHttpRequest();
-	xhttp.ontimeout=AlertError;
 	xhttp.open("POST", "/config", false);
 	xhttp.setRequestHeader("var1", document.getElementById("var1").value);
 	xhttp.setRequestHeader("var2", document.getElementById("var2").value);
 	xhttp.setRequestHeader("sel1", sel1value);
 	xhttp.send();
-	if (xhttp.status != 200)
-	{
-		alert(xhttp.status + ': ' + xhttp.statusText);
-	}
-	else
-	{
-		document.getElementById("setcfg").value="SetCfg: "+xhttp.responseText;//not work!
-	}
+	alert(xhttp.status+':'+xhttp.statusText);
 }
 function getcfg()
 {
 	var xhttp = new XMLHttpRequest();
-	xhttp.ontimeout=AlertError;
 	xhttp.open("GET", "/config", false);
 	xhttp.send();
-	if (xhttp.status != 200)
-	{
-		alert(xhttp.status + ': ' + xhttp.statusText);
-	}
-	else
+	if (xhttp.status == 200)
 	{
 		if (xhttp.getResponseHeader("var1")!=null) document.getElementById("var1").value=xhttp.getResponseHeader("var1");
 		if (xhttp.getResponseHeader("var2")!=null) document.getElementById("var2").value=xhttp.getResponseHeader("var2");
@@ -81,6 +64,7 @@ function getcfg()
 			case "3": document.getElementById("s1v3").checked=true;break;
 		}
 	}
+	alert(xhttp.status+': ' + xhttp.statusText);
 }
 window.onload=function()
 {

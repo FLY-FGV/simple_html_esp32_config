@@ -19,7 +19,7 @@
 
 /* This example demonstrates how to create simple http page
  * using esp_http_server. This file has only startup code.
- */
+ * Look in file_server.c for the implementation */
 
 /* The example uses simple WiFi configuration that you can set via
  * 'make menuconfig'.
@@ -29,8 +29,6 @@
 */
 #define EXAMPLE_WIFI_SSID CONFIG_WIFI_SSID
 #define EXAMPLE_WIFI_PASS CONFIG_WIFI_PASSWORD
-
-struct my_config_data my_conf;
 
 static const char *TAG="example";
 
@@ -78,8 +76,10 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK(esp_wifi_start());
 }
 
+static struct my_config_data cfg;
+
 void app_main()
 {
     initialise_wifi();
-    ESP_ERROR_CHECK(start_cfg_http_server(&my_conf));
+    ESP_ERROR_CHECK(start_cfg_http_server(&cfg));
 }

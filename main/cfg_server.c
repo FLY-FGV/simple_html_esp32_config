@@ -9,8 +9,13 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/param.h>
+#include <sys/unistd.h>
+#include <sys/stat.h>
+#include <dirent.h>
 #include "esp_err.h"
 #include "esp_log.h"
+#include "esp_vfs.h"
 #include "http_server.h"
 #include "cfg_server.h"
 
@@ -49,10 +54,15 @@ static esp_err_t http_resp_main_html(httpd_req_t *req)
     return ESP_OK;
 }
 
-#ifndef httpd_resp_sendstr
-esp_err_t httpd_resp_sendstr(httpd_req_t *req,char *s) {return httpd_resp_send(req,s,strlen(s));};
-#endif
-
+//обработчик запроса POST
+//в js коде на html странице (см. файл cfg_html_page.html)
+//нажатие на кнопку Write Cfg
+//формирует запрос POST к ресурсу /config с заголовками:
+//var1=..
+//var2=...
+//sel1=....
+//если все поля запроса обработаны без ошибок
+//запоминаем принятые значения
 static esp_err_t cfg_set_handler(httpd_req_t *req)// POST request to /config
 {
     char buf[10];
@@ -79,27 +89,35 @@ static esp_err_t cfg_set_handler(httpd_req_t *req)// POST request to /config
         cfg_data->Byte1 = newByte1;
         cfg_data->Byte2 = newByte2;
         cfg_data->Selector = newSelector;
-        httpd_resp_set_status(req, HTTPD_200);
+        httpd_resp_set_status(req, "200 config upload successfully");
         httpd_resp_set_hdr(req, "Location", "/");
         httpd_resp_sendstr(req, "config uploaded successfully");
     }
     else
     {
-        httpd_resp_set_status(req, HTTPD_200);
+        httpd_resp_set_status(req, "200 config contain error");
         httpd_resp_set_hdr(req, "Location", "/");
         httpd_resp_sendstr(req, "config contain error");
     }
     return ESP_OK;
 }
 
+//обработчик запроса GET
+//в js коде на html странице (см. файл cfg_html_page.html)
+//нажатие на кнопку Read Cfg
+//формирует запрос GET к ресурсу /config
+//в ответ формируется с заголовками:
+//var1=..
+//var2=...
+//sel1=....
 static esp_err_t cfg_get_handler(httpd_req_t *req)// GET request to /config
 {
     struct my_config_data * cfg_data = (struct my_config_data *)req->user_ctx;
     char buf[40];
-    httpd_resp_set_status(req, HTTPD_200);
-    itoa(cfg_data->Byte1,   buf,    10);httpd_resp_set_hdr(req, "var1", buf);
-    itoa(cfg_data->Byte2,   buf+10, 10);httpd_resp_set_hdr(req, "var2", buf+10);
-    itoa(cfg_data->Selector,buf+20, 10);httpd_resp_set_hdr(req, "sel1", buf+20);
+    httpd_resp_set_status(req, "200 config read successfully");
+    sprintf(buf,"%d",   cfg_data->Byte1);    httpd_resp_set_hdr(req, "var1", buf);
+    sprintf(buf+10,"%d",cfg_data->Byte2);    httpd_resp_set_hdr(req, "var2", buf+10);
+    sprintf(buf+20,"%d",cfg_data->Selector); httpd_resp_set_hdr(req, "sel1", buf+20);
     httpd_resp_sendstr(req, "config readed successfully");
     return ESP_OK;
 }
